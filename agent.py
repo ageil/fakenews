@@ -14,13 +14,21 @@ class PopAgent(Agent):
 
     def update(self, other):
         """Update agent's own beliefs"""
-        # Convert to false belief
+        # Convert self to false belief
         if self.belief == Belief.Neutral and other.belief == Belief.Fake:
             self.belief = Belief.Fake
 
-        # Retract false belief
+        # Convert self to retracted belief
         if self.belief == Belief.Fake and other.belief == Belief.Retracted:
             self.belief = Belief.Retracted
+
+        # Convert other to false belief
+        if self.belief == Belief.Fake and other.belief == Belief.Neutral:
+            other.belief = Belief.Fake
+
+        # Convert other to retracted belief
+        if self.belief == Belief.Retracted and other.belief == Belief.Fake:
+            other.belief = Belief.Retracted
 
     def step(self):
         agents = self.model.schedule.agents
@@ -37,6 +45,7 @@ class PopAgent(Agent):
         if other.unique_id == self.unique_id:
             assert False, "Something is awry!"
 
+        # print([a.unique_id for a in agents])
         print("Interacting agents:", self.unique_id, other.unique_id)
 
         self.update(other)
