@@ -23,6 +23,7 @@ class SimpleActivation(BaseScheduler):
         return self.logger.logs()
 
     def choose(self):
+        """Chooses pair of neighboring agents for interaction."""
         # pick agent A
         keys = list(self._agents.keys())
         keyA = random.choice(keys)
