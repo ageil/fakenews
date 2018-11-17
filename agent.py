@@ -49,21 +49,3 @@ class PopAgent(Agent):
         print("Interacting agents:", self.unique_id, other.unique_id)
 
         self.update(other)
-
-# if self.belief + other.knowledge == 1:
-# 	self.belief = 1
-# 	other.knowledge = 1
-# 	print("Fake news has spread")
-# 	print("Agent-A is: " + str(self.unique_id))
-# 	print("Agent-A knows: " + str(self.belief))
-# 	print("Agent-B is: " + str(other.unique_id))
-# 	print("Agent-B knows: " + str(other.knowledge))
-# elif self.belief + other.knowledge == 3:
-# 	self.belief = 2
-# 	other.knowledge = 2
-# 	print("agents have seen reason!")
-# 	print("Agent-A is: " + str(self.unique_id))
-# 	print("Agent-A knows: " + str(self.belief))
-# 	print("Agent-B is: " + str(other.unique_id))
-# 	print("Agent-B knows: " + str(other.knowledge))
-# print("")

@@ -1,8 +1,7 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from agent import PopAgent, Belief
-import networkx as nx
-import numpy as np
+from logger import Logger
 
 class KnowledgeModel(Model):
     """A model with some number of agents."""
@@ -11,6 +10,7 @@ class KnowledgeModel(Model):
         self.G = network
         self.num_agents = self.G.number_of_nodes()
         self.schedule = RandomActivation(self)
+        self.logger = Logger(self)
 
         # Create agents
         for i in range(self.num_agents):
@@ -24,7 +24,12 @@ class KnowledgeModel(Model):
                 # Give Agent 1 true information
                 a.belief = Belief.Retracted
             self.schedule.add(a)
+            self.logger.add(a)
+            # print(self.logger.belief_history)
+            # self.logger.remove(a)
+            # print(self.logger.belief_history)
 
     def step(self):
         """Advance the model by one step."""
         self.schedule.step()
+        self.logger.update()
