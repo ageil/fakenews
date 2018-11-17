@@ -3,6 +3,7 @@ from mesa.time import RandomActivation
 from agent import PopAgent, Belief
 from logger import Logger
 
+
 class KnowledgeModel(Model):
     """A model with some number of agents."""
 
@@ -25,11 +26,9 @@ class KnowledgeModel(Model):
                 a.belief = Belief.Retracted
             self.schedule.add(a)
             self.logger.add(a)
-            # print(self.logger.belief_history)
-            # self.logger.remove(a)
-            # print(self.logger.belief_history)
 
     def step(self):
         """Advance the model by one step."""
         self.schedule.step()
-        self.logger.update()
+        self.logger.log()
+

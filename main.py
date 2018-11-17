@@ -5,31 +5,38 @@ import matplotlib.pyplot as plt
 
 
 # Number of agents in the model
-N = 4
+N = 3
 
 # Number of iterations
-timesteps = 3
+timesteps = 4
 
-# type of network
+# create network
 network = nx.complete_graph(N)
 
 # create model
 model = KnowledgeModel(network)
 
-for i in range(timesteps):
-    print("~~~~~ ROUND " + str(i) + " ~~~~~")
-    print("")
+for timestep in range(timesteps):
+    print()
+    print("~~~~~ ROUND " + str(timestep) + " ~~~~~")
+    print()
+
     for agent in model.schedule.agents:
         print(agent.unique_id, agent.belief)
+
     model.step()
 
-# log output
-hist = model.logger.belief_history
-df = pd.DataFrame.from_dict(hist)
+# belief output
+hist_belief = model.logger.belief_history
+df_belief = pd.DataFrame.from_dict(hist_belief)
 
-print(hist)
-print(df)
+# interaction output
+hist_action = model.logger.interaction_history
+df_action = pd.DataFrame.from_dict(hist_action)
 
-#agent_knowledge = [a.belief for a in model.schedule.agents]
-#plt.hist(agent_knowledge)
-#plt.show()
+print(df_belief)
+print(df_action)
+
+# agent_knowledge = [a.belief for a in model.schedule.agents]
+# plt.hist(agent_knowledge)
+# plt.show()
