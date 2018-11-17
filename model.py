@@ -1,5 +1,6 @@
 from mesa import Model
-from mesa.time import RandomActivation
+#from mesa.time import RandomActivation
+from schedule import SingleRandomActivation
 from agent import PopAgent, Belief
 
 
