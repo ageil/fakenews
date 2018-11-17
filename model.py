@@ -9,7 +9,7 @@ class KnowledgeModel(Model):
 
     def __init__(self, N):
         self.num_agents = N
-        self.schedule = RandomActivation(self)
+        self.schedule = SingleRandomActivation(self)
 
         # Create agents
         for i in range(self.num_agents):
