@@ -1,6 +1,5 @@
 from mesa import Agent
 from belief import Belief
-import random
 
 
 class PopAgent(Agent):
@@ -13,22 +12,8 @@ class PopAgent(Agent):
         self.belief = Belief.Neutral
         self.neighbors = neighbors  # list of agent's neighbours
 
-    def interact(self):
-        """Interact with neighbor and update agents' beliefs"""
-        # Pick a neighbouring agent to interact with
-        other_id = random.choice(self.neighbors)
-        other = self.model.schedule.agents[other_id]
-
-        # Ensure self and other are different
-        while self.unique_id == other.unique_id:
-            other = random.choice(self.neighbors)
-        assert self.unique_id != other.unique_id, "Agents are not distinct!"
-
-        self.model.logger.loginteraction(self, other)
-        self.update(other)
-
     def update(self, other):
-        """Update agents' beliefs"""
+        """Update agent's own beliefs"""
         # Convert self to false belief
         if self.belief == Belief.Neutral and other.belief == Belief.Fake:
             self.belief = Belief.Fake
@@ -37,14 +22,6 @@ class PopAgent(Agent):
         if self.belief == Belief.Fake and other.belief == Belief.Retracted:
             self.belief = Belief.Retracted
 
-        # Convert other to false belief
-        if self.belief == Belief.Fake and other.belief == Belief.Neutral:
-            other.belief = Belief.Fake
-
-        # Convert other to retracted belief
-        if self.belief == Belief.Retracted and other.belief == Belief.Fake:
-            other.belief = Belief.Retracted
-
-    def step(self):
-        """Execute step"""
-        self.interact()
+    def step(self, interlocutor):
+        """Interact with interlocutor, updating own beliefs."""
+        self.update(interlocutor)

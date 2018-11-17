@@ -17,26 +17,15 @@ network = nx.complete_graph(N)
 model = KnowledgeModel(network)
 
 for timestep in range(timesteps):
-    print()
-    print("~~~~~ ROUND " + str(timestep) + " ~~~~~")
-    print()
-
+    print("\n~~~~~ ROUND " + str(timestep) + " ~~~~~\n")
     for agent in model.schedule.agents:
         print(agent.unique_id, agent.belief)
-
     model.step()
 
 # belief output
-hist_belief = model.logger.belief_history
-df_belief = pd.DataFrame.from_dict(hist_belief)
+beliefs, interactions, pairs = model.logs()
+df_belief = pd.DataFrame.from_dict(beliefs)
 
-# interaction output
-hist_action = model.logger.interaction_history
-df_action = pd.DataFrame.from_dict(hist_action)
-
-print(df_belief)
-print(df_action)
-
-# agent_knowledge = [a.belief for a in model.schedule.agents]
-# plt.hist(agent_knowledge)
-# plt.show()
+print(df_belief)   # columns = ID, rows = belief at timestep
+print(interactions)   # id: [(interlocutor0_id, interlocutor0_belief), (interlocutor1_id, interlocutor1_belief), ...]
+print(pairs)
