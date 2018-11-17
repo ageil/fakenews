@@ -1,18 +1,22 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from agent import PopAgent, Belief
-
+import networkx as nx
+import numpy as np
 
 class KnowledgeModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, N):
-        self.num_agents = N
+    def __init__(self, network):
+        self.G = network
+        self.num_agents = self.G.number_of_nodes()
         self.schedule = RandomActivation(self)
 
         # Create agents
         for i in range(self.num_agents):
-            a = PopAgent(i, self)
+            neighbors = list(self.G.neighbors(i))
+            a = PopAgent(unique_id=i, model=self, neighbors=neighbors)
+
             if i == 0:
                 # Give Agent 0 false information
                 a.belief = Belief.Fake

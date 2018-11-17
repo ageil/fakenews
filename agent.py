@@ -6,11 +6,14 @@ import random
 class PopAgent(Agent):
     """An Agent with some initial knowledge."""
 
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, neighbors):
         super().__init__(unique_id, model)
 
         # Set every agent to no information at the outset
         self.belief = Belief.Neutral
+
+        # Store list of agents neighbours
+        self.neighbors = neighbors
 
     def update(self, other):
         """Update agent's own beliefs"""
@@ -31,19 +34,16 @@ class PopAgent(Agent):
             other.belief = Belief.Retracted
 
     def step(self):
-        agents = self.model.schedule.agents
+        # During each step, we pick a neighbouring agent to interact with self
+        other_id = random.choice(self.neighbors)
+        other = self.model.schedule.agents[other_id]
 
-        # During each step, we pick an agent to interact with self.
-        other = random.choice(agents)
+        # Ensure self and other are different
+        while self.unique_id == other.unique_id:
+            other = random.choice(self.neighbors)
 
-        # Check to make sure self and other are unique
-        #  If not, sample again (until unique agent found)
-        while other.unique_id == self.unique_id:
-            other = random.choice(agents)
-
-        # Sanity check, to ensure the agents are unique by this point.
-        if other.unique_id == self.unique_id:
-            assert False, "Something is awry!"
+        # Sanity check, to ensure the agents are unique by this point
+        assert self.unique_id != other.unique_id, "Something is awry!"
 
         # print([a.unique_id for a in agents])
         print("Interacting agents:", self.unique_id, other.unique_id)

@@ -1,15 +1,18 @@
 #import mesa
 from model import KnowledgeModel
+import networkx as nx
 import matplotlib.pyplot as plt
 
 
 # Number of agents in the model
-popSize = 10
+popSize = 4
 
 # Number of iterations
 timeLength = 2
 
-model = KnowledgeModel(popSize)
+network = nx.complete_graph(popSize)
+model = KnowledgeModel(network)
+
 for i in range(timeLength):
 	print("~~~~~ ROUND " + str(i) + " ~~~~~")
 	print("")
