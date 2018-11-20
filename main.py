@@ -1,22 +1,31 @@
-#import mesa
 from model import KnowledgeModel
+import networkx as nx
+import pandas as pd
 import matplotlib.pyplot as plt
 
 
 # Number of agents in the model
-popSize = 10
+N = 3
 
 # Number of iterations
-timeLength = 2
+timesteps = 4
 
-model = KnowledgeModel(popSize)
-for i in range(timeLength):
-	print("~~~~~ ROUND " + str(i) + " ~~~~~")
-	print("")
-	for agent in model.schedule.agents:
-		print(agent.unique_id, agent.belief)
-	model.step()
+# create network
+network = nx.complete_graph(N)
 
-#agent_knowledge = [a.belief for a in model.schedule.agents]
-#plt.hist(agent_knowledge)
-#plt.show()
+# create model
+model = KnowledgeModel(network)
+
+for timestep in range(timesteps):
+    print("\n~~~~~ ROUND " + str(timestep) + " ~~~~~\n")
+    for agent in model.schedule.agents:
+        print(agent.unique_id, agent.belief)
+    model.step()
+
+# belief output
+beliefs, interactions, pairs = model.logs()
+df_belief = pd.DataFrame.from_dict(beliefs)
+
+print(df_belief)   # columns = ID, rows = belief at timestep
+print(interactions)   # id: [(interlocutor0_id, interlocutor0_belief), (interlocutor1_id, interlocutor1_belief), ...]
+print(pairs)
