@@ -1,1 +1,1 @@
-# fakenews2018
+# fakenews
