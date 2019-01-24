@@ -36,7 +36,11 @@ class SimpleActivation(BaseScheduler):
         return agentA, agentB
 
     def step(self):
-        """Executes the step of one pair of agents."""
+        """Increments the timer for all agents, then lets one pair of agents interact."""
+        #_increment timers
+        for agent in self.agents:
+            agent.tick()
+
         # choose agent pair
         agentA, agentB = self.choose()
 

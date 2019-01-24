@@ -8,7 +8,7 @@ from simpleScheduler import SimpleActivation
 class KnowledgeModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, network, num_shares):
+    def __init__(self, network, sharetime):
         self.G = network
         self.num_agents = self.G.number_of_nodes()
         self.schedule = SimpleActivation(self)
@@ -16,7 +16,7 @@ class KnowledgeModel(Model):
         # Create agents
         for i in range(self.num_agents):
             neighbors = list(self.G.neighbors(i))
-            a = PopAgent(unique_id=i, model=self, neighbors=neighbors, num_shares=num_shares)
+            a = PopAgent(unique_id=i, model=self, neighbors=neighbors, sharetime=sharetime)
 
             if i == 0:
                 # Give Agent 0 false information
