@@ -7,14 +7,14 @@ import matplotlib.pyplot as plt
 import os
 
 # Hyperparameters:
-N = 10     # Number of agents in the model
-T = 100    # Number of time steps per simulation
-S = 1000      # Number of simulations to run
+N = 1000     # Number of agents in the model
+T = 10000    # Number of time steps per simulation
+S = 100      # Number of simulations to run
 sharetime = np.infty  # Time an agent will share newly attained beliefs; set np.infty for unlimited
 delay = 0  # Time delay before retracted belief is added to model; set 0 for immediate addition
 network = nx.complete_graph(N)   # Agent network
 network.name = "complete"        # Network type used for output
-experiment = "Timed Novelty Model"  # Name of output sub-folder
+experiment = "Delayed Retraction Model"  # Name of model (sets output folder and agent sharing constraints)
 plot_sd = True  # show standard deviation on output plot
 save = False  # write results to output folder
 
