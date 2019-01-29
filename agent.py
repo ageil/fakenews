@@ -33,12 +33,22 @@ class PopAgent(Agent):
         """Update agent's own beliefs"""
         isSharing = other.isSharing()
 
+        if self.model.name == "Timed Novelty Model":
+            isSharingFake = other.isSharing()
+            isSharingRetracted = other.isSharing()
+        elif self.model.name == "Correction Fatigue Model":
+            isSharingFake = True
+            isSharingRetracted = other.isSharing()
+        else:
+            isSharingFake = True
+            isSharingRetracted = True
+
         # Convert self to false belief
-        if self.belief == Belief.Neutral and other.belief == Belief.Fake:  # and isSharing for Timed Novelty Model
+        if self.belief == Belief.Neutral and other.belief == Belief.Fake and isSharingFake:
             self.setBelief(Belief.Fake)
 
         # Convert self to retracted belief
-        if self.belief == Belief.Fake and other.belief == Belief.Retracted and isSharing:
+        if self.belief == Belief.Fake and other.belief == Belief.Retracted and isSharingRetracted:
             self.setBelief(Belief.Retracted)
 
     def step(self, interlocutor):

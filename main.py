@@ -7,25 +7,25 @@ import matplotlib.pyplot as plt
 import os
 
 # Hyperparameters:
-N = 1000     # Number of agents in the model
-T = 10000    # Number of time steps per simulation
-S = 100      # Number of simulations to run
+N = 10     # Number of agents in the model
+T = 100    # Number of time steps per simulation
+S = 1000      # Number of simulations to run
 sharetime = np.infty  # Time an agent will share newly attained beliefs; set np.infty for unlimited
+delay = 0  # Time delay before retracted belief is added to model; set 0 for immediate addition
 network = nx.complete_graph(N)   # Agent network
 network.name = "complete"        # Network type used for output
-experiment = "Correction Fatigue Model"  # Name of output sub-folder
-plot_sd = False  # show standard deviation on output plot
+experiment = "Timed Novelty Model"  # Name of output sub-folder
+plot_sd = True  # show standard deviation on output plot
 save = False  # write results to output folder
 
-def runModel(network, T):
+def runModel(name, network, T, delay):
     # create model
-    model = KnowledgeModel(network=network, sharetime=sharetime)
+    model = KnowledgeModel(network=network, name=name, sharetime=sharetime, delay=delay)
     for t in range(T-1):
         model.step()
     return model.logs()
 
-def runSimulation(S, T, network):
-    N = network.number_of_nodes()
+def runSimulation(S, T, network, experiment, delay):
     num_fake_per_agent = np.empty(shape=(S))
     fake_per_timestep = np.empty(shape=(S, T))
     retracted_per_timestep = np.empty(shape=(S, T))
@@ -33,7 +33,7 @@ def runSimulation(S, T, network):
 
     for s in range(S):
         # run model
-        logs = runModel(network, T)
+        logs = runModel(network=network, name=experiment, T=T, delay=delay)
         df_belief = pd.DataFrame.from_dict(logs[0])
 
         # eval output
@@ -56,7 +56,7 @@ def runSimulation(S, T, network):
     return avg_num_fake_per_agent, frac_belief_mean, frac_belief_sd
 
 
-avg_num_fake, frac_belief_mean, frac_belief_sd = runSimulation(S, T, network)
+avg_num_fake, frac_belief_mean, frac_belief_sd = runSimulation(S, T, network, experiment, delay)
 neutral_mean, fake_mean, retracted_mean = frac_belief_mean
 neutral_sd, fake_sd, retracted_sd = frac_belief_sd
 print("Average number of time steps holding false belief:", avg_num_fake)
@@ -77,14 +77,15 @@ plt.xlim(0,T)
 plt.ylim(0,1.11)
 plt.xlabel("Time")
 plt.ylabel("Proportion of population holding belief")
-plt.title("N = {N}, T = {T}, S = {S}, Num = {avg}, Share = {shr}".format(N=N, T=T, S=S, avg=round(avg_num_fake, 1), shr=sharetime))
+plt.title("N = {N}, T = {T}, S = {S}, Num = {avg}, Share = {shr}, Delay = {dly}".format(N=N, T=T, S=S, avg=round(avg_num_fake, 1),
+                                                                                        shr=sharetime, dly = delay))
 plt.legend(loc="lower center", ncol=3, fancybox=True, bbox_to_anchor=(0.5, 0.9))
 if save: # write plot to output directory
     directory = "./output/" + experiment + "/" + str(N)
     if not os.path.exists(directory):
         os.makedirs(directory)
-    plt.savefig(directory + "/N{N}-T{T}-S{S}-{shr}-{name}-{avg}.png".format(N=N, T=T, S=S, shr=sharetime, name=network.name,
-                                                                        avg=round(avg_num_fake,1)), bbox_inches="tight")
+    plt.savefig(directory + "/N{N}-T{T}-S{S}-{shr}-{dly}-{name}-{avg}{sd}.png".format(
+        N=N, T=T, S=S, shr=sharetime, dly=delay, name=network.name, avg=round(avg_num_fake,1), sd=("-sd" if plot_sd else "")), bbox_inches="tight")
 plt.show()
 
 
