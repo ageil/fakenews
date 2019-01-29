@@ -31,8 +31,8 @@ class PopAgent(Agent):
 
     def update(self, other):
         """Update agent's own beliefs"""
-        isSharing = other.isSharing()
 
+        # Check if other is sharing belief (model dependent)
         if self.model.name == "Timed Novelty Model":
             isSharingFake = other.isSharing()
             isSharingRetracted = other.isSharing()
