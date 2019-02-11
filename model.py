@@ -7,12 +7,13 @@ import random
 class KnowledgeModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, network, name, sharetime, delay):
-        self.name = name
+    def __init__(self, network, constraints, sharetime, delay, singleSource = False):
+        self.name = constraints
         self.G = network
         self.num_agents = self.G.number_of_nodes()
         self.schedule = SimpleActivation(self)
         self.delay = delay
+        self.singleSource = singleSource
 
         # Create agents
         for i in range(self.num_agents):
@@ -22,6 +23,7 @@ class KnowledgeModel(Model):
             if i == 0:
                 # Give Agent 0 false information
                 a.belief = Belief.Fake
+                self.agentZero = a
             if (i == 1) and (self.delay == 0):
                 # Give Agent 1 true information
                 a.belief = Belief.Retracted
@@ -29,7 +31,7 @@ class KnowledgeModel(Model):
 
     def addRetracted(self):
         """Add retracted belief to random agent."""
-        a = random.choice(self.schedule.agents)
+        a = self.agentZero if self.singleSource else random.choice(self.schedule.agents)
         a.belief = Belief.Retracted
 
     def step(self):
