@@ -11,15 +11,15 @@ N = 100     # Number of agents in the network
 T = 2000    # Number of time steps per simulation
 S = 1000      # Number of simulations to run
 sharetime = 250  # Time an agent will share newly attained beliefs; set np.infty for unlimited
-delay = 0  # Time delay before retracted belief is added to model; set 0 for immediate addition
-singleSource = False  # retracted source same as false belief source (False only valid if delay > 0)
+delay = 700  # Time delay before retracted belief is added to model; set 0 for immediate addition
+singleSource = False  # retracted source same as false belief source (False only applied if delay > 0)
 graph = nx.connected_watts_strogatz_graph     # Agent graph function
-nx_params = {"n": N, "k": 16, "p": 0.07}        # Graph parameters
+nx_params = {"n": N, "k": 32, "p": 0.16}        # Graph parameters
 constraints = "Timed Novelty Model"  # Set agent sharing constraints (name of model)
 experiment = "Watts Strogatz Model"           # Set output folder name
 network_name = "SmallWorlds"                  # Network type used for output naming
 plot_sd = True  # show standard deviation on output plot
-save = False    # write results to output folder
+save = True    # write results to output folder
 
 def runModel(network, constraints, T, delay, singleSource):
     # create model
