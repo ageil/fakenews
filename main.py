@@ -11,14 +11,13 @@ N = 100     # Number of agents in the network
 T = 2000    # Number of time steps per simulation
 S = 1000      # Number of simulations to run
 sharetime = 250  # Time an agent will share newly attained beliefs; set np.infty for unlimited
-delay = 700  # Time delay before retracted belief is added to model; set 0 for immediate addition
+delay = 0  # Time delay before retracted belief is added to model; set 0 for immediate addition
 singleSource = False  # retracted source same as false belief source (False only applied if delay > 0)
-graph = nx.connected_watts_strogatz_graph     # Agent graph function
-nx_params = {"n": N, "k": 32, "p": 0.16}        # Graph parameters
-constraints = "Timed Novelty Model"  # Set agent sharing constraints (name of model)
-experiment = "Watts Strogatz Model"           # Set output folder name
-network_name = "SmallWorlds"                  # Network type used for output naming
-plot_sd = True  # show standard deviation on output plot
+graph = nx.random_partition_graph  # Agent graph function
+nx_params = {"sizes": [50,50], "p_in": 0.4, "p_out": 0.2}        # Graph parameters
+constraints = "Timed Novelty Model"      # Set agent sharing constraints (name of model)
+experiment = "Homophily Model"           # Set output folder name
+network_name = "RandomPartition"         # Network type used for output naming
 save = True    # write results to output folder
 
 def runModel(network, constraints, T, delay, singleSource):
@@ -82,6 +81,7 @@ def plotOutput(network_name, save, plot_sd = False):
     plt.legend(loc="lower center", ncol=3, fancybox=True, bbox_to_anchor=(0.5, 0.9))
     if save:  # write plot to output directory
         directory = "./output/" + experiment + "/" + str(N)
+        directory += "/sd" if plot_sd else ""  # create subfolder for sd plots
         if not os.path.exists(directory):
             os.makedirs(directory)
         network_name = network_name + '_' + '_'.join(['{}={}'.format(k, v) for k, v in nx_params.items()])
@@ -95,8 +95,8 @@ neutral_mean, fake_mean, retracted_mean = frac_belief_mean
 neutral_sd, fake_sd, retracted_sd = frac_belief_sd
 print("Average number of time steps holding false belief:", avg_num_fake)
 
-plotOutput(network_name, save, plot_sd=plot_sd)
-plotOutput(network_name, save)
+plotOutput(network_name, save, plot_sd=False)
+plotOutput(network_name, save, plot_sd=True)
 
 
 # beliefs, interactions, pairs = runModel(network, T, debug=True)
