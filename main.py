@@ -1,102 +1,57 @@
-from model import KnowledgeModel
-from belief import Belief
-import networkx as nx
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import os
+import networkx as nx
+from belief import Mode
+from simulator import Simulator
 
-# Hyperparameters:
+
+# Hyperparameters
 N = 100     # Number of agents in the network
 T = 2000    # Number of time steps per simulation
 S = 1000      # Number of simulations to run
-sharetime = 250  # Time an agent will share newly attained beliefs; set np.infty for unlimited
-delay = 0  # Time delay before retracted belief is added to model; set 0 for immediate addition
-singleSource = False  # retracted source same as false belief source (False only applied if delay > 0)
-graph = nx.random_partition_graph  # Agent graph function
-nx_params = {"sizes": [50,50], "p_in": 0.4, "p_out": 0.2}        # Graph parameters
-constraints = "Timed Novelty Model"      # Set agent sharing constraints (name of model)
-experiment = "Homophily Model"           # Set output folder name
-network_name = "RandomPartition"         # Network type used for output naming
-save = True    # write results to output folder
 
-def runModel(network, constraints, T, delay, singleSource):
-    # create model
-    model = KnowledgeModel(network=network, constraints=constraints, sharetime=sharetime,
-                           delay=delay, singleSource=singleSource)
-    for t in range(T-1):
-        model.step()
-    return model.logs()
+# Agent belief sharing constraints
+mode = Mode.Default        # Set agent sharing mode
+shareTimeLimit = np.infty  # Time an agent will share their newly attained beliefs; set np.infty for unlimited
 
-def runSimulation(S, T, graph, nx_params, constraints, delay, singleSource):
-    num_fake_per_agent = np.empty(shape=(S))
-    fake_per_timestep = np.empty(shape=(S, T))
-    retracted_per_timestep = np.empty(shape=(S, T))
-    neutral_per_timestep = np.empty(shape=(S, T))
+# Delayed introduction of retracted belief
+delay = 0             # Time delay before retracted belief is added to model; set 0 for immediate addition
+singleSource = False  # Retracted source same as false belief source (False only applied if delay > 0)
 
-    for s in range(S):
-        # run model
-        network = graph(**nx_params)  # generate network from graph algorithm and params
-        logs = runModel(network=network, constraints=constraints, T=T, delay=delay, singleSource=singleSource)
-        df_belief = pd.DataFrame.from_dict(logs[0])
+# Graph & network structure
+graph = nx.random_partition_graph                          # Agent graph function
+nx_params = {"sizes": [50,50], "p_in": 0.4, "p_out": 0.2}  # Graph parameters
 
-        # eval output
-        num_fake_per_agent[s] = np.mean(np.sum(df_belief.values == Belief.Fake, axis=0))
-        fake_per_timestep[s,:] = np.mean(df_belief.values == Belief.Fake, axis=1)
-        retracted_per_timestep[s,:] = np.mean(df_belief.values == Belief.Retracted, axis=1)
-        neutral_per_timestep[s,:] = np.mean(df_belief.values == Belief.Neutral, axis=1)
+# Output & naming
+experiment = "Homophily Model"      # Set output folder name
+subexperiment = "Delay"             # Set output subfolder name
+network_name = "RandomPartition"    # Set network name for output file
+save = True                         # Write plot to file
 
-    avg_num_fake_per_agent = np.mean(num_fake_per_agent)
-    frac_fake_per_timestep = np.mean(fake_per_timestep, axis=0)
-    frac_fake_per_timestep_sd = np.std(fake_per_timestep, axis=0)
-    frac_retracted_per_timestep = np.mean(retracted_per_timestep, axis=0)
-    frac_retracted_per_timestep_sd = np.std(retracted_per_timestep, axis=0)
-    frac_neutral_per_timestep = np.mean(neutral_per_timestep, axis=0)
-    frac_neutral_per_timestep_sd = np.std(neutral_per_timestep, axis=0)
+# Run simulator
+sim = Simulator(N=N, S=S, T=T,
+                graph=graph,
+                nx_params=nx_params,
+                sharingMode=mode,
+                shareTimeLimit=shareTimeLimit,
+                delay=delay,
+                singleSource=singleSource)
+data = sim.runSimulation()
 
-    frac_belief_mean = (frac_neutral_per_timestep, frac_fake_per_timestep, frac_retracted_per_timestep)
-    frac_belief_sd = (frac_neutral_per_timestep_sd, frac_fake_per_timestep_sd, frac_retracted_per_timestep_sd)
-
-    return avg_num_fake_per_agent, frac_belief_mean, frac_belief_sd
-
-def plotOutput(network_name, save, plot_sd = False):
-    alpha = 0.5
-    plt.plot(range(T), fake_mean, label="False", color="tab:red", ls="-")
-    plt.plot(range(T), neutral_mean, label="Neutral", color="tab:orange", ls="-")
-    plt.plot(range(T), retracted_mean, label="Retracted", color="tab:green", ls="-")
-    if plot_sd:
-        plt.plot(range(T), fake_mean + fake_sd, color="tab:red", ls="--", alpha=alpha)
-        plt.plot(range(T), fake_mean - fake_sd, color="tab:red", ls="--", alpha=alpha)
-        plt.plot(range(T), neutral_mean + neutral_sd, color="tab:orange", ls="--", alpha=alpha)
-        plt.plot(range(T), neutral_mean - neutral_sd, color="tab:orange", ls="--", alpha=alpha)
-        plt.plot(range(T), retracted_mean + retracted_sd, color="tab:green", ls="--", alpha=alpha)
-        plt.plot(range(T), retracted_mean - retracted_sd, color="tab:green", ls="--", alpha=alpha)
-    plt.xlim(0, T)
-    plt.ylim(0, 1.11)
-    plt.xlabel("Time")
-    plt.ylabel("Proportion of population holding belief")
-    plt.title("N = {N}, T = {T}, S = {S}, Num = {avg}, Share = {shr}, Delay = {dly}".format(N=N, T=T, S=S,
-                                                                                            avg=round(avg_num_fake, 1),
-                                                                                            shr=sharetime, dly=delay))
-    plt.legend(loc="lower center", ncol=3, fancybox=True, bbox_to_anchor=(0.5, 0.9))
-    if save:  # write plot to output directory
-        directory = "./output/" + experiment + "/" + str(N)
-        directory += "/sd" if plot_sd else ""  # create subfolder for sd plots
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        network_name = network_name + '_' + '_'.join(['{}={}'.format(k, v) for k, v in nx_params.items()])
-        plt.savefig(directory + "/N{N}-T{T}-S{S}-{shr}-{dly}-{name}-{avg}{sd}.png".format(
-            N=N, T=T, S=S, shr=sharetime, dly=delay, name=network_name, avg=round(avg_num_fake, 1),
-            sd=("-sd" if plot_sd else "")), bbox_inches="tight")
-    plt.show()
-
-avg_num_fake, frac_belief_mean, frac_belief_sd = runSimulation(S, T, graph, nx_params, constraints, delay, singleSource)
-neutral_mean, fake_mean, retracted_mean = frac_belief_mean
-neutral_sd, fake_sd, retracted_sd = frac_belief_sd
-print("Average number of time steps holding false belief:", avg_num_fake)
-
-plotOutput(network_name, save, plot_sd=False)
-plotOutput(network_name, save, plot_sd=True)
+# Visualize output
+sim.plotOutput(data=data,
+               experiment=experiment,
+               subexperiment=subexperiment,
+               network_name=network_name,
+               nx_params=nx_params,
+               save=save,
+               plot_sd=False)
+sim.plotOutput(data=data,
+               experiment=experiment,
+               subexperiment=subexperiment,
+               network_name=network_name,
+               nx_params=nx_params,
+               save=save,
+               plot_sd=True)
 
 
 # beliefs, interactions, pairs = runModel(network, T, debug=True)

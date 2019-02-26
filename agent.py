@@ -1,6 +1,5 @@
 from mesa import Agent
-from belief import Belief
-
+from belief import Belief, Mode
 
 class PopAgent(Agent):
     """An Agent with some initial knowledge."""
@@ -33,10 +32,10 @@ class PopAgent(Agent):
         """Update agent's own beliefs"""
 
         # Check if other is sharing belief (model dependent)
-        if self.model.name == "Timed Novelty Model":
+        if self.model.mode == Mode.TimedNovelty:
             isSharingFake = other.isSharing()
             isSharingRetracted = other.isSharing()
-        elif self.model.name == "Correction Fatigue Model":
+        elif self.model.mode == Mode.CorrectionFatigue:
             isSharingFake = True
             isSharingRetracted = other.isSharing()
         else:

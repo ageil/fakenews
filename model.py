@@ -7,8 +7,8 @@ import random
 class KnowledgeModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, network, constraints, sharetime, delay, singleSource = False):
-        self.name = constraints
+    def __init__(self, network, sharingMode, sharetime, delay, singleSource = False):
+        self.mode = sharingMode
         self.G = network
         self.num_agents = self.G.number_of_nodes()
         self.schedule = SimpleActivation(self)
