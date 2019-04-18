@@ -18,6 +18,8 @@ class Simulator():
         self.delay = delay
         self.singleSource = singleSource
         self.shareTimeLimit = shareTimeLimit
+        self.out = pd.DataFrame(index=[x for x in range(self.T * self.S)], columns=['s', 't'] + [x for x in range(self.N)]) # sim*tstep (rows) by sim#, tstep, ID1, ID2, ...
+        # self.out = pd.DataFrame(index=(self.T * self.S), columns=(self.N + 2))
 
     def runModel(self, network):
         """Run network model for T timesteps and return logs."""
@@ -35,7 +37,7 @@ class Simulator():
 
         return model.logs()
 
-    def runSimulation(self):
+    def runSimulation(self, save, experiment, subexperiment, network_name, nx_params):
         """Run model over S simulations and return aggregate logs."""
 
         num_fake_per_agent = np.empty(shape=(self.S))
@@ -48,6 +50,14 @@ class Simulator():
             network = self.graph(**self.nx_params)  # generate network from graph and params
             logs = self.runModel(network=network)
             df_belief = pd.DataFrame.from_dict(logs[0])
+
+            if save:  # add beliefs from each run to output matrix
+                start = s*(self.T)     # start index
+                end = (s+1)*(self.T)   # end index
+
+                self.out.iloc[start:end, 0] = np.repeat(s+1, repeats=self.T)  # vector of timesteps  # simulation number
+                self.out.iloc[start:end, 1] = np.linspace(start=1, stop=self.T, num=self.T, dtype=int)  # timestep number
+                self.out.iloc[start:end, 2:self.N+2] = df_belief.values  # beliefs for each agent (col_idx = id)
 
             # eval output
             num_fake_per_agent[s] = np.mean(np.sum(df_belief.values == Belief.Fake, axis=0))
@@ -73,6 +83,16 @@ class Simulator():
         frac_belief_mean = (frac_neutral_per_timestep, frac_fake_per_timestep, frac_retracted_per_timestep)
         frac_belief_sd = (frac_neutral_per_timestep_sd, frac_fake_per_timestep_sd, frac_retracted_per_timestep_sd)
         belief_dist = (neutral_dist, fake_dist, retracted_dist)
+
+        if save:  # write raw data to output directory
+            directory = "./output/" + experiment + "/" + subexperiment + "/data/"
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            network_name = network_name + '_' + '_'.join(['{}={}'.format(k, v) for k, v in nx_params.items()])
+            path = directory + "/N{N}-T{T}-S{S}-{shr}-{dly}-{name}-data.csv".format(
+                N=self.N, T=self.T, S=self.S, shr=self.shareTimeLimit, dly=self.delay, name=network_name)
+            self.out.to_csv(path, index=False, encoding='utf-8')
+
 
         return avg_fake_per_agent, frac_belief_mean, frac_belief_sd, belief_dist
 
