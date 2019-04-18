@@ -9,7 +9,7 @@ class SimpleLogger:
 
     def add(self, agent):
         """Add agent to logger"""
-        self.belief_history[agent.unique_id] = [agent.belief]
+        self.belief_history[agent.unique_id] = [agent.belief.value]
         self.interaction_history[agent.unique_id] = []
 
     def logs(self):
@@ -22,7 +22,7 @@ class SimpleLogger:
 
         # log belief history
         for agent in agents:
-            self.belief_history[agent.unique_id].append(agent.belief)
+            self.belief_history[agent.unique_id].append(agent.belief.value)
 
         # log interaction history
         entryA = (agentA.unique_id, agentA.belief)

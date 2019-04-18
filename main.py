@@ -4,12 +4,12 @@ from belief import Mode
 from simulator import Simulator
 
 # Hyperparameters
-N = 100     # Number of agents in the network
-T = 1000    # Number of time steps per simulation
+N = 10     # Number of agents in the network
+T = 100    # Number of time steps per simulation
 S = 1000      # Number of simulations to run
 
 # Agent belief sharing constraints
-mode = Mode.CorrectionFatigue   # Set agent sharing mode
+mode = Mode.Default   # Set agent sharing mode
 shareTimeLimit = np.infty       # Time an agent will share their newly attained beliefs; set np.infty for unlimited
 
 # Delayed introduction of retracted belief
@@ -25,8 +25,8 @@ nx_params = {"n": N}
 # nx_params = {"sizes": [50,50], "p_in": 0.4, "p_out": 0.2}  # Graph parameters
 
 # Output & naming
-experiment = "Correction Fatigue Model"      # Set output folder name
-subexperiment = "100"             # Set output subfolder name
+experiment = "Base Model 2"      # Set output folder name
+subexperiment = "10"             # Set output subfolder name
 network_name = "complete"    # Set network name for output file
 save = True                         # Write plot to file
 
