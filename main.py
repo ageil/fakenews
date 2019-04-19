@@ -4,12 +4,12 @@ from belief import Mode
 from simulator import Simulator
 
 # Hyperparameters
-N = 10     # Number of agents in the network
-T = 100    # Number of time steps per simulation
-S = 1000      # Number of simulations to run
+N = 1000     # Number of agents in the network
+T = 11000    # Number of time steps per simulation
+S = 100     # Number of simulations to run
 
 # Agent belief sharing constraints
-mode = Mode.Default   # Set agent sharing mode
+mode = Mode.Default        # Set agent sharing mode
 shareTimeLimit = np.infty       # Time an agent will share their newly attained beliefs; set np.infty for unlimited
 
 # Delayed introduction of retracted belief
@@ -25,10 +25,10 @@ nx_params = {"n": N}
 # nx_params = {"sizes": [50,50], "p_in": 0.4, "p_out": 0.2}  # Graph parameters
 
 # Output & naming
-experiment = "Base Model 2"      # Set output folder name
-subexperiment = "10"             # Set output subfolder name
+experiment = "Base Model 3"    # Set output folder name
+subexperiment = "N={0} T={1} S={2}".format(N, T, S)    # Set output subfolder name
 network_name = "complete"    # Set network name for output file
-save = True                         # Write plot to file
+save = True                  # Write plot to file
 
 # Run simulator
 sim = Simulator(N=N, S=S, T=T,
@@ -43,8 +43,8 @@ data = sim.runSimulation(save=save,
                          subexperiment=subexperiment,
                          network_name=network_name,
                          nx_params=nx_params)
-avg, frac_mean, frac_sd, belief_dist = data
-temporal_data = avg, frac_mean, frac_sd
+avg_agent, sd_agent, frac_mean, frac_sd, belief_dist = data
+temporal_data = avg_agent, sd_agent, frac_mean, frac_sd
 
 # Visualize output
 sim.visBeliefsOverTime(data=temporal_data,
@@ -62,6 +62,7 @@ sim.visBeliefsOverTime(data=temporal_data,
                        save=save,
                        plot_sd=True)
 sim.visFinalBeliefDistributions(belief_dist=belief_dist,
+                                data=temporal_data,
                                 experiment=experiment,
                                 subexperiment=subexperiment,
                                 network_name=network_name,

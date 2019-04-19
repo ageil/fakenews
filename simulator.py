@@ -18,8 +18,6 @@ class Simulator():
         self.delay = delay
         self.singleSource = singleSource
         self.shareTimeLimit = shareTimeLimit
-        # self.out = pd.DataFrame(index=[x for x in range(self.T * self.S)], columns=['s', 't'] + [x for x in range(self.N)]) # sim*tstep (rows) by sim#, tstep, ID1, ID2, ...
-        # self.out = pd.DataFrame(index=(self.T * self.S), columns=(self.N + 2))
 
     def runModel(self, network):
         """Run network model for T timesteps and return logs."""
@@ -81,9 +79,12 @@ class Simulator():
             neutral_per_timestep[s, :] = np.mean(df_belief.values == 0, axis=1)
 
         # aggregate beliefs over time
-        avg_neutral_per_agent = np.mean(num_neutral_per_agent)
-        avg_fake_per_agent = np.mean(num_fake_per_agent)
-        avg_retracted_per_agent = np.mean(num_retracted_per_agent)
+        neutral_per_agent_avg = np.mean(num_neutral_per_agent)
+        neutral_per_agent_sd = np.std(num_neutral_per_agent)
+        fake_per_agent_avg = np.mean(num_fake_per_agent)
+        fake_per_agent_sd = np.std(num_fake_per_agent)
+        retracted_per_agent_avg = np.mean(num_retracted_per_agent)
+        retracted_per_agent_sd = np.std(num_retracted_per_agent)
         frac_neutral_per_timestep = np.mean(neutral_per_timestep, axis=0)
         frac_neutral_per_timestep_sd = np.std(neutral_per_timestep, axis=0)
         frac_fake_per_timestep = np.mean(fake_per_timestep, axis=0)
@@ -97,15 +98,20 @@ class Simulator():
         retracted_dist = retracted_per_timestep[:, self.T-1]
 
         # bundle aggregated output
+        avg_per_agent = (neutral_per_agent_avg, fake_per_agent_avg, retracted_per_agent_avg)
+        sd_per_agent = (neutral_per_agent_sd, fake_per_agent_sd, retracted_per_agent_sd)
         frac_belief_mean = (frac_neutral_per_timestep, frac_fake_per_timestep, frac_retracted_per_timestep)
         frac_belief_sd = (frac_neutral_per_timestep_sd, frac_fake_per_timestep_sd, frac_retracted_per_timestep_sd)
         belief_dist = (neutral_dist, fake_dist, retracted_dist)
 
-        return avg_fake_per_agent, frac_belief_mean, frac_belief_sd, belief_dist
+        return avg_per_agent, sd_per_agent, frac_belief_mean, frac_belief_sd, belief_dist
 
-    def visFinalBeliefDistributions(self, belief_dist, experiment, subexperiment, network_name, nx_params, save):
+    def visFinalBeliefDistributions(self, belief_dist, data, experiment, subexperiment, network_name, nx_params, save):
         """Plot belief distributions on final time step over all simulations."""
 
+        avg_agent_beliefs, sd_agent_beliefs, _, _ = data
+        avg_neutral, avg_fake, avg_retracted = avg_agent_beliefs
+        sd_neutral, sd_fake, sd_retracted = sd_agent_beliefs
         neutral_dist, fake_dist, retracted_dist = belief_dist
         ranges = np.linspace(start=0, stop=1, num=100)
 
@@ -130,8 +136,11 @@ class Simulator():
             if not os.path.exists(directory):
                 os.makedirs(directory)
             network_name = network_name + '_' + '_'.join(['{}={}'.format(k, v) for k, v in nx_params.items()])
-            plt.savefig(directory + "/N{N}-T{T}-S{S}-{shr}-{dly}-{name}-hist.png".format(
-                N=self.N, T=self.T, S=self.S, shr=self.shareTimeLimit, dly=self.delay, name=network_name), bbox_inches="tight")
+            filename = "/N={N}-T={T}-S={S}-shr={shr}-dly={dly}-avg_n={avg_n}(sd={sd_n})-avg_f={avg_f}(sd={sd_f})-avg_r={avg_r}(sd={sd_r})-{name}.png".format(
+                N=self.N, T=self.T, S=self.S, shr=self.shareTimeLimit, dly=self.delay, name=network_name,
+                avg_n=round(avg_neutral, 1), avg_f=round(avg_fake, 1), avg_r=round(avg_retracted, 1),
+                sd_n=round(sd_neutral, 1), sd_f=round(sd_fake, 1), sd_r=round(sd_retracted, 1))
+            plt.savefig(directory + filename, bbox_inches="tight")
 
         plt.show()
 
@@ -139,7 +148,9 @@ class Simulator():
         """Plot data and output to file."""
 
         # unpack aggregate data
-        avg_num_fake, frac_belief_mean, frac_belief_sd = data
+        avg_num, sd_num, frac_belief_mean, frac_belief_sd = data
+        avg_neutral, avg_fake, avg_retracted = avg_num
+        sd_neutral, sd_fake, sd_retracted = sd_num
         neutral_mean, fake_mean, retracted_mean = frac_belief_mean
         neutral_sd, fake_sd, retracted_sd = frac_belief_sd
 
@@ -158,8 +169,6 @@ class Simulator():
         plt.ylim(0, 1.11)
         plt.xlabel("Time")
         plt.ylabel("Proportion of population holding belief")
-        title_params = {"N":self.N, "T":self.T, "S":self.S, "avg":round(avg_num_fake, 1), "shr":self.shareTimeLimit, "dly":self.delay}
-        plt.title("N = {N}, T = {T}, S = {S}, Num = {avg}, Share = {shr}, Delay = {dly}".format(**title_params))
         plt.legend(loc="lower center", ncol=3, fancybox=True, bbox_to_anchor=(0.5, 0.9))
 
         if save:  # write plot to output directory
@@ -168,8 +177,11 @@ class Simulator():
             if not os.path.exists(directory):
                 os.makedirs(directory)
             network_name = network_name + '_' + '_'.join(['{}={}'.format(k, v) for k, v in nx_params.items()])
-            plt.savefig(directory + "/N{N}-T{T}-S{S}-{shr}-{dly}-{name}-{avg}{sd}.png".format(
+            filename = "/N={N}-T={T}-S={S}-shr={shr}-dly={dly}-avg_n={avg_n}(sd={sd_n})-avg_f={avg_f}(sd={sd_f})-avg_r={avg_r}(sd={sd_r})-{name}{sd}.png".format(
                 N=self.N, T=self.T, S=self.S, shr=self.shareTimeLimit, dly=self.delay, name=network_name,
-                avg=round(avg_num_fake, 1), sd=("-sd" if plot_sd else "")), bbox_inches="tight")
+                avg_n=round(avg_neutral, 1), avg_f=round(avg_fake, 1), avg_r=round(avg_retracted, 1),
+                sd_n=round(sd_neutral, 1), sd_f=round(sd_fake, 1), sd_r=round(sd_retracted, 1),
+                sd=("-sd" if plot_sd else ""))
+            plt.savefig(directory + filename, bbox_inches="tight")
 
         plt.show()
