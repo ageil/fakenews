@@ -4,13 +4,13 @@ from belief import Mode
 from simulator import Simulator
 
 # Hyperparameters
-N = 1000     # Number of agents in the network
-T = 11000    # Number of time steps per simulation
-S = 100     # Number of simulations to run
+N = 100     # Number of agents in the network
+T = 1000    # Number of time steps per simulation
+S = 1000     # Number of simulations to run
 
 # Agent belief sharing constraints
-mode = Mode.Default        # Set agent sharing mode
-shareTimeLimit = np.infty       # Time an agent will share their newly attained beliefs; set np.infty for unlimited
+mode = Mode.TimedNovelty        # Set agent sharing mode
+shareTimeLimit = 75       # Time an agent will share their newly attained beliefs; set np.infty for unlimited
 
 # Delayed introduction of retracted belief
 delay = 0             # Time delay before retracted belief is added to model; set 0 for immediate addition
@@ -25,8 +25,8 @@ nx_params = {"n": N}
 # nx_params = {"sizes": [50,50], "p_in": 0.4, "p_out": 0.2}  # Graph parameters
 
 # Output & naming
-experiment = "Base Model 3"    # Set output folder name
-subexperiment = "N={0} T={1} S={2}".format(N, T, S)    # Set output subfolder name
+experiment = "Timed Novelty Model"    # Set output folder name
+subexperiment = "N={0} T={1} S={2} Share={3}".format(N, T, S, shareTimeLimit)    # Set output subfolder name
 network_name = "complete"    # Set network name for output file
 save = True                  # Write plot to file
 
