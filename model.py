@@ -7,13 +7,14 @@ import random
 class KnowledgeModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, network, sharingMode, sharetime, delay, singleSource = False):
+    def __init__(self, network, sharingMode, sharetime, delay, singleSource=False, samePartition=True):
         self.mode = sharingMode
         self.G = network
         self.num_agents = self.G.number_of_nodes()
         self.schedule = SimpleActivation(self)
         self.delay = delay
         self.singleSource = singleSource
+        self.samePartition = samePartition
 
         # Create agents
         for i in range(self.num_agents):
@@ -31,7 +32,16 @@ class KnowledgeModel(Model):
 
     def addRetracted(self):
         """Add retracted belief to random agent."""
-        a = self.agentZero if self.singleSource else random.choice(self.schedule.agents)
+        if self.singleSource:
+            a = self.agentZero
+        elif 'partition' in self.G.graph.keys() and self.samePartition:
+            num = random.choice(list(self.G.graph['partition'][0]))
+            a = self.schedule.agents[num]
+        elif 'partition' in self.G.graph.keys() and not self.samePartition:
+            num = random.choice(list(self.G.graph['partition'][1]))
+            a = self.schedule.agents[num]
+        else:
+            a = random.choice(self.schedule.agents)
         a.belief = Belief.Retracted
 
     def step(self):

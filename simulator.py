@@ -8,7 +8,7 @@ import os
 
 class Simulator():
     """A simulator to run multiple knowledge models."""
-    def __init__(self, N, S, T, graph, nx_params, sharingMode, shareTimeLimit, delay, singleSource):
+    def __init__(self, N, S, T, graph, nx_params, sharingMode, shareTimeLimit, delay, singleSource, samePartition):
         self.N = N
         self.S = S
         self.T = T
@@ -17,6 +17,7 @@ class Simulator():
         self.mode = sharingMode
         self.delay = delay
         self.singleSource = singleSource
+        self.samePartition = samePartition
         self.shareTimeLimit = shareTimeLimit
 
     def runModel(self, network):
@@ -27,7 +28,8 @@ class Simulator():
                                sharingMode=self.mode,
                                sharetime=self.shareTimeLimit,
                                delay=self.delay,
-                               singleSource=self.singleSource)
+                               singleSource=self.singleSource,
+                               samePartition=self.samePartition)
 
         # run model
         for t in range(self.T - 1):
