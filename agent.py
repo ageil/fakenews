@@ -1,6 +1,7 @@
 from mesa import Agent
 from belief import Belief, Mode
 
+
 class PopAgent(Agent):
     """An Agent with some initial knowledge."""
 

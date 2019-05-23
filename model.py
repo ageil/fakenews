@@ -42,7 +42,7 @@ class KnowledgeModel(Model):
             a = self.schedule.agents[num]
         else:
             a = random.choice(self.schedule.agents)
-        a.belief = Belief.Retracted
+        a.setBelief(Belief.Retracted)
 
     def step(self):
         """Advance the model by one step."""

@@ -76,9 +76,9 @@ class Simulator():
             num_neutral_per_agent[s] = np.mean(np.sum(df_belief.values == 0, axis=0))
             num_fake_per_agent[s] = np.mean(np.sum(df_belief.values == 1, axis=0))
             num_retracted_per_agent[s] = np.mean(np.sum(df_belief.values == 2, axis=0))
+            neutral_per_timestep[s, :] = np.mean(df_belief.values == 0, axis=1)
             fake_per_timestep[s, :] = np.mean(df_belief.values == 1, axis=1)
             retracted_per_timestep[s, :] = np.mean(df_belief.values == 2, axis=1)
-            neutral_per_timestep[s, :] = np.mean(df_belief.values == 0, axis=1)
 
         # aggregate beliefs over time
         neutral_per_agent_avg = np.mean(num_neutral_per_agent)
