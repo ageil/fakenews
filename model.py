@@ -34,6 +34,8 @@ class KnowledgeModel(Model):
         """Add retracted belief to random agent."""
         if self.singleSource:
             a = self.agentZero
+        elif self.samePartition is None:
+            a = random.choice(self.schedule.agents)
         elif 'partition' in self.G.graph.keys() and self.samePartition:
             num = random.choice(list(self.G.graph['partition'][0]))
             a = self.schedule.agents[num]
