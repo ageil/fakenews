@@ -146,6 +146,9 @@ class Simulator():
 
         plt.show()
 
+    def avgGroupBeliefsOverTime(self):
+        return
+
     def visBeliefsOverTime(self, data, experiment, subexperiment, network_name, nx_params, save, plot_sd=False):
         """Plot data and output to file."""
 

@@ -25,10 +25,13 @@ class KnowledgeModel(Model):
                 # Give Agent 0 false information
                 a.belief = Belief.Fake
                 self.agentZero = a
-            if (i == 1) and (self.delay == 0):
+            if (i == 1) and (self.delay == 0) and self.samePartition is None and self.singleSource:
                 # Give Agent 1 true information
                 a.belief = Belief.Retracted
             self.schedule.add(a)
+
+        if (self.delay == 0) and (self.samePartition is not None or not self.singleSource):
+            self.addRetracted()
 
     def addRetracted(self):
         """Add retracted belief to random agent."""
@@ -37,7 +40,10 @@ class KnowledgeModel(Model):
         elif self.samePartition is None:
             a = random.choice(self.schedule.agents)
         elif 'partition' in self.G.graph.keys() and self.samePartition:
-            num = random.choice(list(self.G.graph['partition'][0]))
+            if (self.delay == 0):
+                num = random.choice(list(self.G.graph['partition'][0])[1:])  # retraction source != fake source
+            else:
+                num = random.choice(list(self.G.graph['partition'][0]))
             a = self.schedule.agents[num]
         elif 'partition' in self.G.graph.keys() and not self.samePartition:
             num = random.choice(list(self.G.graph['partition'][1]))

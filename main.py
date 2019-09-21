@@ -5,30 +5,32 @@ from simulator import Simulator
 
 # Hyperparameters
 N = 100     # Number of agents in the network
-T = 1000    # Number of time steps per simulation
+T = 1200    # Number of time steps per simulation
 S = 1000     # Number of simulations to run
 
 # Agent belief sharing constraints
-mode = Mode.TimedNovelty        # Set agent sharing mode
-shareTimeLimit = 100  # Time an agent will share their newly attained beliefs; set np.infty for unlimited
+mode = Mode.Default            # Set agent sharing mode
+shareTimeLimit = np.infty      # Time an agent will share their newly attained beliefs; set np.infty for unlimited
 
 # Introducing the retracted belief
-delay = 700            # Time delay before retracted belief is added to model; set 0 for immediate addition
+delay = 0            # Time delay before retracted belief is added to model; set 0 for immediate addition
 singleSource = False   # Retracted source same as false belief source (False only applied if delay > 0)
-samePartition = True  # Retracted source is initialized in same partition as fake source (only random_partition_graph)
+samePartition = None   # Retracted source in same partition as fake (only random_partition_graph); set None for random
 
 # Graph & network structure
-graph = nx.complete_graph
-nx_params = {"n": N}
-# graph = nx.watts_strogatz_graph
-# nx_params = {"n": N, "k": 32, "p": 0.16}
+# graph = nx.complete_graph
+# nx_params = {"n": N}
+# network_name = "complete"    # Set network name for output file
+graph = nx.watts_strogatz_graph
+nx_params = {"n": N, "k": 8, "p": 0.1}
+network_name = "SmallWorlds"    # Set network name for output file
 # graph = nx.random_partition_graph
 # nx_params = {"sizes": [50, 50], "p_in": 0.4, "p_out": 0.2}  # Graph parameters
+# network_name = "RandomPartition"    # Set network name for output file
 
 # Output & naming
-experiment = "Homophily Model"    # Set output folder name
-subexperiment = "/samePartition={4}/N={0} T={1} S={2} Delay={3}".format(N, T, S, delay, str(samePartition))    # Set output subfolder name
-network_name = "complete"    # Set network name for output file
+experiment = "Watts Strogatz Model"    # Set output folder name
+subexperiment = "Delay/Comparison (T=1200 k=8)/N={0} T={1} S={2} Delay={3}".format(N, T, S, delay)    # Set output subfolder name
 save = False                 # Write plot to file
 
 # Run simulator
@@ -63,13 +65,13 @@ sim.visBeliefsOverTime(data=temporal_data,
                        nx_params=nx_params,
                        save=save,
                        plot_sd=True)
-sim.visFinalBeliefDistributions(belief_dist=belief_dist,
-                                data=temporal_data,
-                                experiment=experiment,
-                                subexperiment=subexperiment,
-                                network_name=network_name,
-                                nx_params=nx_params,
-                                save=save)
+# sim.visFinalBeliefDistributions(belief_dist=belief_dist,
+#                                 data=temporal_data,
+#                                 experiment=experiment,
+#                                 subexperiment=subexperiment,
+#                                 network_name=network_name,
+#                                 nx_params=nx_params,
+#                                 save=save)
 
 
 # beliefs, interactions, pairs = runModel(network, T, debug=True)
